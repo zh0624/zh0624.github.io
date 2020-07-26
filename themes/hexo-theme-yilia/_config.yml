@@ -2,7 +2,7 @@
 
 menu:
   主页: /
-  随笔: /tags/随笔/
+  编程: /categories/programming
 
 # SubNav
 subnav:
@@ -14,7 +14,7 @@ subnav:
   #segmentfault: "#"
   #bilibili: "#"
   #acfun: "#"
-  #mail: "mailto:litten225@qq.com"
+  mail: "zhanghh0624@163.com"
   #facebook: "#"
   #google: "#"
   #twitter: "#"
@@ -30,7 +30,7 @@ root: /
 # Content
 
 # 文章太长，截断按钮文字
-excerpt_link: more
+excerpt_link: Read More
 # 文章卡片右下角常驻链接，不需要请设置为false
 show_all_link: '展开全文'
 # 数学公式
@@ -50,7 +50,7 @@ weixin:
 
 # 目录
 # 目录设定：0-不显示目录； 1-文章对应的md文件里有toc:true属性，才有目录； 2-所有文章均显示目录
-toc: 1
+toc: 2
 # 根据自己的习惯来设置，如果你的目录标题习惯有标号，置为true即可隐藏hexo重复的序号；否则置为false
 toc_hide_index: true
 # 目录为空时的提示
@@ -104,13 +104,13 @@ style:
 # slider的设置
 slider:
   # 是否默认展开tags板块
-  showTags: false
+  showTags: true
 
 # 智能菜单
 # 如不需要，将该对应项置为false
 # 比如
 #smart_menu:
-#  friends: false
+#  friends: true
 smart_menu:
   innerArchive: '所有文章'
   friends: '友链'

@@ -1,9 +1,15 @@
+---
+title: Markdown语法总结
+date: 2020-07-26 16:28:21
+tags: Markdown
+categories: 编程
+---
+  
+<img src="https://s1.ax1x.com/2020/07/26/a9WA3R.jpg" alt="markdown" title="Markdown 轻量级标记语言" style="zoom:80%;"/>
 
-
-Markdown语法总结
-=================
-
-关于markdown的编辑器，强烈推荐Typora。谁用谁知道。
+本文简要介绍Markdown的一些常用基本语法。持续更新~
+PS：推荐Typora编辑器，效果谁用谁知道。
+<!--more-->
 
 一、标题
 -----------------
@@ -32,7 +38,6 @@ Markdown语法总结
 ----------end---------
 ```
 
-<!--more-->
 
 二、格式
 -----------------
@@ -127,10 +132,8 @@ ___粗斜体文本___
 
 #### 5、下划线
 
-下划线需要借助HTML中的<u>来实现：
-
+下划线需要借助HTML中的\<u>来实现：
 <u>我是一个下划线</u>
-
 ````
 --------代码实现-------
 <u>我是一个下划线</u>
@@ -366,7 +369,7 @@ ___粗斜体文本___
 我的github地址[Github][Github]
 
 [Blog]: https://zh0624.github.io
-[Github]: http://www.runoob.com/
+[Github]: https://github.com/zh0624
 
 ```
 --------代码实现-------
@@ -374,7 +377,7 @@ ___粗斜体文本___
 我的github地址[Github][Github]
 
 [Blog]: https://zh0624.github.io
-[Github]: http://www.runoob.com/
+[Github]: https://github.com/zh0624
 ----------end---------
 ```
 

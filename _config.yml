@@ -32,13 +32,13 @@ i18n_dir: :lang
 skip_render:
 
 # Writing
-new_post_name: :title.md # File name of new posts
-default_layout: post
+new_post_name: :title.md # 新文章的博客名
+default_layout: post #默认格式,在post.md中设置
 titlecase: false # Transform title into titlecase
 external_link:
-  enable: true # Open external links in new tab
-  field: site # Apply to the whole site
-  exclude: ''
+  enable: true # 在新窗口中打开外部链接
+  field: site # 可选 site / post
+  exclude: '' 
 filename_case: 0
 render_drafts: false
 post_asset_folder: false
@@ -62,8 +62,13 @@ index_generator:
   order_by: -date
 
 # Category & Tag
-default_category: uncategorized
+default_category: categorized
 category_map:
+     编程: programming
+     生活: life
+     相册: photo
+     随笔: essay
+     其他: other
 tag_map:
 
 # Metadata elements
@@ -99,5 +104,5 @@ theme: hexo-theme-yilia
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: https://github.com/zh0624/zh0624.github.io.git
+  repo: git@github.com:zh0624/zh0624.github.io.git
   branch: master
