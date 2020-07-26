@@ -1,8 +1,8 @@
 ---
-title: Markdown语法总结
-date: 2020-07-26 16:28:21
+title: UNIX进程间通信(IPC)
+date: 2020-07-27 00:40:00
 tags: Markdown
-categories: 编程
+categories: 操作系统
 toc: true
 ---
 
