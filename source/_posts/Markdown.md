@@ -3,8 +3,9 @@ title: Markdown语法总结
 date: 2020-07-26 16:28:21
 tags: Markdown
 categories: 编程
+toc: true
 ---
-  
+
 <img src="https://s1.ax1x.com/2020/07/26/a9WA3R.jpg" alt="markdown" title="Markdown 轻量级标记语言" style="zoom:80%;"/>
 
 本文简要介绍Markdown的一些常用基本语法。持续更新~
