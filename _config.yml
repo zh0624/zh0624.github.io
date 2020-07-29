@@ -3,11 +3,11 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: ZH's Blog
-subtitle: '欢迎~'
-description: '我可以耐心等，幸福可以来得慢一些，只要它是真的。'
+title: Segmentation Fault
+subtitle: 'Learning, and coding.'
+description: '╮(￣▽ ￣)╭	'
 keywords:
-author: Zhang
+author: BugCode
 language: zh_CN
 timezone: 'Asia/Shanghai'
 
@@ -64,12 +64,15 @@ index_generator:
 # Category & Tag
 default_category: categorized
 category_map:
-     编程: programming
+     编程: programming  
      生活: life
      相册: photo
      随笔: essay
      其他: other
 tag_map:
+     进程间通信: IPC
+     工具: Tool
+     操作系统: os
 
 # Metadata elements
 ## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta

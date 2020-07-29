@@ -1,3 +1,11 @@
+---
+title: UNIX进程间通信(IPC)
+date: 2020-07-27 00:40:00
+tags: [进程间通信,操作系统]
+categories: 编程
+toc: true
+---
+
 <img src="https://s1.ax1x.com/2020/07/27/aCHlff.jpg" alt="IPC" style="zoom: 50%;" />
 
 进程间通信(IPC)，顾名思义，就是实现两个进程间通信交流的一种方式。这种通信交流的目的一般是为了进行数据传输、通知事件或者进程资源共享等等。

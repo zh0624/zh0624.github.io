@@ -3,6 +3,11 @@
 menu:
   主页: /
   编程: /categories/programming
+  #生活: /categories/life
+  #相册: /categories/photo
+  #随笔: /categories/essay
+  #其他: /categories/other
+  
 
 # SubNav
 subnav:
@@ -127,7 +132,7 @@ friends:
 # 网易云音乐插件
 music:
   enable: true
-  #id: 1332647902  # 网易云分享的ID
-  autoplay: true  # 是否开启自动播放
+  id: 500909733  # 网易云分享的ID
+  autoplay: false  # 是否开启自动播放
 
 aboutme: 很惭愧<br><br>只做了一点微小的工作<br>谢谢大家
