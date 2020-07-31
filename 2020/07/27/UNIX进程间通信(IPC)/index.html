@@ -16,8 +16,9 @@
 <meta property="og:description" content="进程间通信(IPC)，顾名思义，就是实现两个进程间通信交流的一种方式。这种通信交流的目的一般是为了进行数据传输、通知事件或者进程资源共享等等。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://s1.ax1x.com/2020/07/27/aCHlff.jpg">
+<meta property="og:image" content="https://s1.ax1x.com/2020/07/31/a1waJ1.jpg">
 <meta property="article:published_time" content="2020-07-26T16:40:00.000Z">
-<meta property="article:modified_time" content="2020-07-29T15:42:53.874Z">
+<meta property="article:modified_time" content="2020-07-31T15:36:58.740Z">
 <meta property="article:author" content="BugCode">
 <meta property="article:tag" content="进程间通信">
 <meta property="article:tag" content="操作系统">
@@ -193,7 +194,7 @@
     <div id="toc-article" class="toc-article">
         <span id="toc-close" class="toc-close" title="隐藏导航" onclick="showBtn();">×</span>
         <strong class="toc-title">文章目录</strong>
-           <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#进程间通信的方式："><span class="toc-number">1.</span> <span class="toc-text">进程间通信的方式：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、管道-PIPE"><span class="toc-number">1.1.</span> <span class="toc-text">1、管道(PIPE)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、命名管道-FIFO"><span class="toc-number">1.2.</span> <span class="toc-text">2、命名管道(FIFO)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3、消息队列-MessageQueue"><span class="toc-number">1.3.</span> <span class="toc-text">3、消息队列(MessageQueue)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4、共享内存-SharedMemory"><span class="toc-number">1.4.</span> <span class="toc-text">4、共享内存(SharedMemory)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5、信号量-Semaphore"><span class="toc-number">1.5.</span> <span class="toc-text">5、信号量(Semaphore)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6、套接字-Socket"><span class="toc-number">1.6.</span> <span class="toc-text">6、套接字(Socket)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7、信号-sinal"><span class="toc-number">1.7.</span> <span class="toc-text">7、信号(sinal )</span></a></li></ol></li></ol>
+           <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#进程间通信"><span class="toc-number">1.</span> <span class="toc-text">进程间通信</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#进程间通信的发展历史"><span class="toc-number">2.</span> <span class="toc-text">进程间通信的发展历史</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1、管道-PIPE"><span class="toc-number">3.</span> <span class="toc-text">1、管道(PIPE)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、命名管道-FIFO"><span class="toc-number">4.</span> <span class="toc-text">2、命名管道(FIFO)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3、消息队列-MessageQueue"><span class="toc-number">5.</span> <span class="toc-text">3、消息队列(MessageQueue)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4、共享内存-SharedMemory"><span class="toc-number">6.</span> <span class="toc-text">4、共享内存(SharedMemory)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5、信号量-Semaphore"><span class="toc-number">7.</span> <span class="toc-text">5、信号量(Semaphore)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6、套接字-Socket"><span class="toc-number">8.</span> <span class="toc-text">6、套接字(Socket)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7、信号-sinal"><span class="toc-number">9.</span> <span class="toc-text">7、信号(sinal )</span></a></li></ol>
          </div>
    <script type="text/javascript">
     function showToc(){
@@ -220,8 +221,19 @@
 <p>进程间通信(IPC)，顾名思义，就是实现两个进程间通信交流的一种方式。这种通信交流的目的一般是为了进行数据传输、通知事件或者进程资源共享等等。</p>
 <a id="more"></a>
 
-<h3 id="进程间通信的方式："><a href="#进程间通信的方式：" class="headerlink" title="进程间通信的方式："></a>进程间通信的方式：</h3><p>由于虚拟内存的关系，对于所有进程来说，它们只能看到操作系统想让他们看到的虚拟地址空间，这块空间是每个进程的私有财产，这部分私有财产受到操作系统的保护，别的进程是无法进行随意访问的。任何内存越界的行为都可能直接导致程序崩溃，因此，无论出于什么目的，想要访问一块不属于进程自身的地址空间时，就需要使用到进程间通信了。</p>
-<h4 id="1、管道-PIPE"><a href="#1、管道-PIPE" class="headerlink" title="1、管道(PIPE)"></a>1、管道(PIPE)</h4><p>​    管道是一种较为古老的进程间通信方式，</p>
+<h4 id="进程间通信"><a href="#进程间通信" class="headerlink" title="进程间通信"></a>进程间通信</h4><p>由于虚拟内存的关系，对于所有进程来说，它们只能看到操作系统想让他们看到的虚拟地址空间，这块空间是每个进程的私有财产，这部分私有财产受到操作系统的保护，别的进程是无法进行随意访问的。</p>
+<p>任何内存越界的行为都可能直接导致程序崩溃，因此，无论出于什么目的，想要访问一块不属于进程自身的地址空间时，就需要使用到进程间通信了。</p>
+<h4 id="进程间通信的发展历史"><a href="#进程间通信的发展历史" class="headerlink" title="进程间通信的发展历史"></a>进程间通信的发展历史</h4><p>Linux下的进程通信手段基本上是从Unix平台上的进程通信手段继承而来的。而对Unix发展做出重大贡献的两大主力AT&amp;T的贝尔实验室及BSD（加州大学伯克利分校的伯克利软件发布中心），在进程间通信方面的侧重点有所不同。前者对Unix早期的进程间通信手段进行了系统的改进和扩充，形成了“System V IPC”，通信进程局限在单个计算机内；后者则跳过了该限制，形成了基于套接口（socket）的进程间通信机制。Linux则把两者继承了下来。</p>
+<img src="https://s1.ax1x.com/2020/07/31/a1waJ1.jpg" alt="Linux IPC" style="zoom: 33%;" />
+
+<p>最初Unix IPC包括：管道(PIPE)、FIFO、信号(signal)；</p>
+<p>System V IPC包括：System V 消息队列、System V 信号灯、System V 共享内存区；</p>
+<p>POSIXIPC包括： POSIX消息队列、POSIX信号灯、POSIX共享内存区。</p>
+<p>需要指出的是：POSIX是Portable Operating System Interface（可移植操作系统接口）的缩写。POSIX 是由 IEEE 指定的一系列标准，以阐明和统一应用程序编程接口；如果你使用了某些POSIX并未进行标准化的API时，在将该程序或者库移植到其他的类UNIX系统中时，会遇到很大的麻烦。同时，Socket虽然常用于网络通信，但他同时也可以用于本机内的不同进程间的通信(Unix domain socket)。</p>
+<p>本文以下的介绍基于POSIX标准。</p>
+<h4 id="1、管道-PIPE"><a href="#1、管道-PIPE" class="headerlink" title="1、管道(PIPE)"></a>1、管道(PIPE)</h4><p>​    管道是一种较为古老的进程间通信方式，我们一般所说的PIPE属于<code>匿名管道</code>，而后面将要说到的FIFO则是<code>命名管道</code>。管道的实际上是一个由内核管理的缓冲区，也可理解为一个文件(就像Linux中的任意一个普通文件一样)，我们可以对这块缓冲或者说文件进行写入和读取的操作，与操作文件的方式类似。</p>
+<p>管道是一个单向通信的方式，也就是说先写输入管道的信息，一定会先被读取出来，即所谓的“先入先出”。同时，管道(这里指的是匿名管道，PIPE)只能够实现父子进程或是兄弟进程间的通信，无任何血缘关系的进程间无法通过PIPE来实现通信。</p>
+<p>当我们在进程中创建一个PIPE之后，会在内存当中开辟出一块缓冲区，并且为进程返回两个文件描述符：fd[0]与fd[1]。其中，fd[0]连接了管道的读取端，而fd[1]连接了管道的写入端。我们向fd[1]里写入的数据可以从fd[0]中读取出来。当父进程调用fork创建出一个子后，子进程中的fd[0]与fd[1]同样指向内存中的这一块缓冲区，注意，父进程与 子进程的fd指向的是同一块内存。因此，如果需要实现父进程向子进程的通信，只需关闭父进程的读取端口，关闭子进程的写入端口即可。反之亦然。</p>
 <h4 id="2、命名管道-FIFO"><a href="#2、命名管道-FIFO" class="headerlink" title="2、命名管道(FIFO)"></a>2、命名管道(FIFO)</h4><h4 id="3、消息队列-MessageQueue"><a href="#3、消息队列-MessageQueue" class="headerlink" title="3、消息队列(MessageQueue)"></a>3、消息队列(MessageQueue)</h4><h4 id="4、共享内存-SharedMemory"><a href="#4、共享内存-SharedMemory" class="headerlink" title="4、共享内存(SharedMemory)"></a>4、共享内存(SharedMemory)</h4><h4 id="5、信号量-Semaphore"><a href="#5、信号量-Semaphore" class="headerlink" title="5、信号量(Semaphore)"></a>5、信号量(Semaphore)</h4><h4 id="6、套接字-Socket"><a href="#6、套接字-Socket" class="headerlink" title="6、套接字(Socket)"></a>6、套接字(Socket)</h4><h4 id="7、信号-sinal"><a href="#7、信号-sinal" class="headerlink" title="7、信号(sinal )"></a>7、信号(sinal )</h4>
       
 
@@ -370,7 +382,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#进程间通信的方式："><span class="toc-number">1.</span> <span class="toc-text">进程间通信的方式：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、管道-PIPE"><span class="toc-number">1.1.</span> <span class="toc-text">1、管道(PIPE)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、命名管道-FIFO"><span class="toc-number">1.2.</span> <span class="toc-text">2、命名管道(FIFO)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3、消息队列-MessageQueue"><span class="toc-number">1.3.</span> <span class="toc-text">3、消息队列(MessageQueue)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4、共享内存-SharedMemory"><span class="toc-number">1.4.</span> <span class="toc-text">4、共享内存(SharedMemory)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5、信号量-Semaphore"><span class="toc-number">1.5.</span> <span class="toc-text">5、信号量(Semaphore)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6、套接字-Socket"><span class="toc-number">1.6.</span> <span class="toc-text">6、套接字(Socket)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7、信号-sinal"><span class="toc-number">1.7.</span> <span class="toc-text">7、信号(sinal )</span></a></li></ol></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#进程间通信"><span class="toc-number">1.</span> <span class="toc-text">进程间通信</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#进程间通信的发展历史"><span class="toc-number">2.</span> <span class="toc-text">进程间通信的发展历史</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1、管道-PIPE"><span class="toc-number">3.</span> <span class="toc-text">1、管道(PIPE)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、命名管道-FIFO"><span class="toc-number">4.</span> <span class="toc-text">2、命名管道(FIFO)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3、消息队列-MessageQueue"><span class="toc-number">5.</span> <span class="toc-text">3、消息队列(MessageQueue)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4、共享内存-SharedMemory"><span class="toc-number">6.</span> <span class="toc-text">4、共享内存(SharedMemory)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5、信号量-Semaphore"><span class="toc-number">7.</span> <span class="toc-text">5、信号量(Semaphore)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6、套接字-Socket"><span class="toc-number">8.</span> <span class="toc-text">6、套接字(Socket)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7、信号-sinal"><span class="toc-number">9.</span> <span class="toc-text">7、信号(sinal )</span></a></li></ol>
                     </div>
                 </span>
             </div>
