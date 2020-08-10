@@ -8,8 +8,8 @@ toc: true
 
 <img src="https://s1.ax1x.com/2020/07/26/a9WA3R.jpg" alt="markdown" title="Markdown 轻量级标记语言" style="zoom:80%;"/>
 
-本文简要介绍Markdown的一些常用基本语法。持续更新~
-PS：推荐Typora编辑器，效果谁用谁知道。
+本文简要介绍Markdown的一些常用基本语法。个人使用的是hexo来搭建博客，hexo就是一种支持markdown作为博文的博客框架。因此，整理以下markdown的基础语法十分的有必要。在不断的创作过程中，会持续更新~
+<!--推荐Typora编辑器，可以十分方便的进行markdown文本格式的编辑。-->
 <!--more-->
 
 一、标题
@@ -481,4 +481,6 @@ ___粗斜体文本___
 
 #### 3、未完待续
 
-11
+参考文献：
+
+[1] [Markdown 教程](https://www.runoob.com/markdown/md-tutorial.html)
