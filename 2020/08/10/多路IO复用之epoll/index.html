@@ -6,18 +6,18 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>多路I/O复用之epoll | Segmentation Fault</title>
+  <title>I/O多路复用之epoll | Segmentation Fault</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="I&#x2F;O多路复用是通过一种机制，让进程可以同时监听多个文件描述符，当某个文件描述符符合某种状态时，能够通知到相应的进程采取对应的操作。多路复用机制发展至现在，常用的有select、poll、epoll三种方式，它们的发展历程是一个不断优化的过程。本文首先简要介绍多路复用机制的概念，再简单描述下它的发展例程，会着重介绍epoll的机制及部分实现。文中内容提炼了不少前人梳理的结果，并加以自己的理解进">
 <meta property="og:type" content="article">
-<meta property="og:title" content="多路I&#x2F;O复用之epoll">
+<meta property="og:title" content="I&#x2F;O多路复用之epoll">
 <meta property="og:url" content="http://yoursite.com/2020/08/10/%E5%A4%9A%E8%B7%AFIO%E5%A4%8D%E7%94%A8%E4%B9%8Bepoll/index.html">
 <meta property="og:site_name" content="Segmentation Fault">
 <meta property="og:description" content="I&#x2F;O多路复用是通过一种机制，让进程可以同时监听多个文件描述符，当某个文件描述符符合某种状态时，能够通知到相应的进程采取对应的操作。多路复用机制发展至现在，常用的有select、poll、epoll三种方式，它们的发展历程是一个不断优化的过程。本文首先简要介绍多路复用机制的概念，再简单描述下它的发展例程，会着重介绍epoll的机制及部分实现。文中内容提炼了不少前人梳理的结果，并加以自己的理解进">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://s1.ax1x.com/2020/08/11/aq5Z0f.jpg">
 <meta property="article:published_time" content="2020-08-10T15:45:00.000Z">
-<meta property="article:modified_time" content="2020-08-10T16:25:24.600Z">
+<meta property="article:modified_time" content="2020-08-11T16:51:55.496Z">
 <meta property="article:author" content="BugCode">
 <meta property="article:tag" content="操作系统">
 <meta property="article:tag" content="同步">
@@ -183,7 +183,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      多路I/O复用之epoll
+      I/O多路复用之epoll
     </h1>
   
 
@@ -201,7 +201,7 @@
     <div id="toc-article" class="toc-article">
         <span id="toc-close" class="toc-close" title="隐藏导航" onclick="showBtn();">×</span>
         <strong class="toc-title">文章目录</strong>
-           
+           <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、阻塞、非阻塞、同步、异步"><span class="toc-number">1.</span> <span class="toc-text">1、阻塞、非阻塞、同步、异步</span></a></li></ol>
          </div>
    <script type="text/javascript">
     function showToc(){
@@ -228,6 +228,22 @@
 <p>I/O多路复用是通过一种机制，让进程可以同时监听多个文件描述符，当某个文件描述符符合某种状态时，能够通知到相应的进程采取对应的操作。多路复用机制发展至现在，常用的有select、poll、epoll三种方式，它们的发展历程是一个不断优化的过程。本文首先简要介绍多路复用机制的概念，再简单描述下它的发展例程，会着重介绍epoll的机制及部分实现。文中内容提炼了不少前人梳理的结果，并加以自己的理解进行阐述。</p>
 <a id="more"></a>
 
+<h4 id="1、阻塞、非阻塞、同步、异步"><a href="#1、阻塞、非阻塞、同步、异步" class="headerlink" title="1、阻塞、非阻塞、同步、异步"></a>1、阻塞、非阻塞、同步、异步</h4><p>阻塞、非阻塞、同步、异步，这几个概念一开始就曾让我困惑了很久。阻塞和同步不是一个意思嘛？非阻塞不就是异步嘛？为啥还搞这些乱七八糟花里胡哨的。为了弄懂这些名词的区别，我开始在网上查阅资料，在知乎上看到一个解释，感觉十分清晰，这里分享一下。</p>
+<p>同步与异步，关注的是消息通信的机制，<strong>重点在于通信机制的不同</strong>。</p>
+<p>同步指的是，在消息交互的过程当中，我给你打了一个电话，在你给我回复之前，我要一直把电话开着，等你给我回复，直到你给我回消息之后，我才会挂断电话。用专业术语来说就是，<strong>在发出一个调用时，在没有得到结果之前，该调用就不返回。但是一旦调用返回，就得到返回值了。</strong>结合例子，做出解释就是，在发出一个调用(我给你打电话)时，在没有得到结果(你给我回复我想要的消息)之前，该调用就不返回(我不会挂断电话)。但是一旦调用返回(我挂掉电话)，就得到返回值了(意味着我得到了我想要的消息)。</p>
+<p>异步指的是，在消息交互的过程当中，我给你发一个信息，我就先去干别的事情了，等你给我回复信息之后，我再来看你回的消息。用专业术语来说就是，<strong>当一个异步过程调用发出后，调用者不会立刻得到结果。而是在调用发出后，被调用者通过状态、通知来通知调用者，或通过回调函数处理这个调用。</strong>在结合例子解释一下，就是说，当一个异步过程调用(发信息)发出后，调用者(我)不会立刻得到结果。而是在调用发出后，被调用者(你)通过状态、通知(给我回消息)来通知调用者，或通过回调函数处理这个调用。</p>
+<p>注意到了没有，区别在哪里，就是在于这个<strong>机制</strong>的不同，<strong>同步类比于电话，异步类比于短信</strong>，两种不同的消息通信机制。我给你打电话，如果你没给我回复时，我就挂了电话，那么我就无法获得想要的信息了。而我给你短信，在我发出去之后，我就可以不管了，等你给我回复了，我再过来看你回复的消息。</p>
+<p>阻塞与非阻塞，关注的是在等待调用结果时的一个状态，<strong>重点是在等待期间的状态的不同</strong>。</p>
+<p>阻塞指的是，当我在等你给我回复之前，我啥也不干，就在那干等着，直到你给我回复之后，我才去做别的事情。用专业术语来说就是，<strong>阻塞调用是指调用结果返回之前，当前线程会被挂起，调用线程只有在得到结果之后才会返回。</strong></p>
+<p>而非阻塞指的是，在我等你给我回复之前，我可以做一些别的事，不用在那里干等着。用专业术语来解释就是，<strong>非阻塞调用指在不能立刻得到结果之前，该调用不会阻塞当前线程。</strong></p>
+<p>现在你来思考一下，能否区分出阻塞与同步，非阻塞与异步？</p>
+<p>如果还有一点点晕，再仔细的阅读一下之前的同步与异步的例子，推敲一下阻塞与非阻塞的场景，与之有何不同。</p>
+<p>好的，其实阻塞和同步之所以容易混淆，是因为他们似乎都是有一个<code>等待</code>的过程，不过之前在解释什么是同步的时候，已经指出了它的重点在于同步是一种消息通信的机制，它的重点在机制上。</p>
+<p>什么样的场景是同步阻塞呢，比如我给你打电话，你没有给我回消息，我保持电话畅通，这时候来了个快递，我为了等你就没管，然后你给我回复了消息，我听到后就挂断了电话，再去签收了快递。</p>
+<p>而同步非阻塞呢，同样类似上面的例子，我给你打电话，你没有给我回消息，我保持电话畅通，这时候来了个快递，我顺手就签收了，然后你给我回复了消息，我听到后就挂断了电话。</p>
+<p>这样是不是就理解了何为阻塞，何为同步。<strong>阻塞是一种状态</strong>，当你阻塞时，你不可以干别的事，只能等，<strong>而同步是一种机制</strong>，当你使用了同步的机制的时候，你没有获取到结果时，你就要保持住，不能够返回。至于你在保持的期间，啥也不干，还是做些别的事，这不是同步机制所关心的。</p>
+<p>异步其实类似，这里不再赘述。</p>
+<p>最后用那个帖子里的一个回复来说明下问题吧，假设你要买一本书，现在你要问老板有没有，这时候你要去问下老板，于是乎，有了以下这几种情况：<br><strong>同步阻塞</strong>：你打电话问老板有没有某书，老板去查，在老板给你结果之前，你一直拿着电话等待老板给你结果，你此时什么也干不了。<br><strong>同步非阻塞</strong>：你打电话过去后，在老板给你结果之前，你拿着电话等待老板给你结果，但是你拿着电话等的时候可以干一些其他事，比如嗑瓜子。<br><strong>异步阻塞</strong>：你打电话过去后，老板去查，你挂掉电话，等待老板给你打电话通知你，这是异步，你挂了电话后还是啥也干不了，只能一直等着老板给你打电话告诉你结果，这是阻塞。<br><strong>异步非阻塞</strong>：你打电话过去后，你就挂了电话，然后你就想干嘛干嘛去。只用时不时去看看老板给你打电话没。</p>
 <p>参考文章：</p>
 <p>[1] <a href="https://zhuanlan.zhihu.com/p/93609693" target="_blank" rel="noopener">深入理解Epoll</a></p>
 <p>[2] <a href="https://www.jianshu.com/p/397449cadc9a" target="_blank" rel="noopener">IO多路复用的三种机制Select，Poll，Epoll</a></p>
@@ -381,7 +397,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    目录，不存在的…
+                    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、阻塞、非阻塞、同步、异步"><span class="toc-number">1.</span> <span class="toc-text">1、阻塞、非阻塞、同步、异步</span></a></li></ol>
                     </div>
                 </span>
             </div>
