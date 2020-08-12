@@ -17,7 +17,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://s1.ax1x.com/2020/08/11/aq5Z0f.jpg">
 <meta property="article:published_time" content="2020-08-10T15:45:00.000Z">
-<meta property="article:modified_time" content="2020-08-11T16:51:55.496Z">
+<meta property="article:modified_time" content="2020-08-12T16:36:29.302Z">
 <meta property="article:author" content="BugCode">
 <meta property="article:tag" content="操作系统">
 <meta property="article:tag" content="同步">
@@ -201,7 +201,7 @@
     <div id="toc-article" class="toc-article">
         <span id="toc-close" class="toc-close" title="隐藏导航" onclick="showBtn();">×</span>
         <strong class="toc-title">文章目录</strong>
-           <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、阻塞、非阻塞、同步、异步"><span class="toc-number">1.</span> <span class="toc-text">1、阻塞、非阻塞、同步、异步</span></a></li></ol>
+           <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、阻塞、非阻塞、同步、异步"><span class="toc-number">1.</span> <span class="toc-text">1、阻塞、非阻塞、同步、异步</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、IO模型"><span class="toc-number">2.</span> <span class="toc-text">2、IO模型</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#read"><span class="toc-number">2.1.</span> <span class="toc-text">read()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#select"><span class="toc-number">2.2.</span> <span class="toc-text">select()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#poll"><span class="toc-number">2.3.</span> <span class="toc-text">poll()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#epoll"><span class="toc-number">2.4.</span> <span class="toc-text">epoll()</span></a></li></ol></li></ol>
          </div>
    <script type="text/javascript">
     function showToc(){
@@ -243,7 +243,52 @@
 <p>而同步非阻塞呢，同样类似上面的例子，我给你打电话，你没有给我回消息，我保持电话畅通，这时候来了个快递，我顺手就签收了，然后你给我回复了消息，我听到后就挂断了电话。</p>
 <p>这样是不是就理解了何为阻塞，何为同步。<strong>阻塞是一种状态</strong>，当你阻塞时，你不可以干别的事，只能等，<strong>而同步是一种机制</strong>，当你使用了同步的机制的时候，你没有获取到结果时，你就要保持住，不能够返回。至于你在保持的期间，啥也不干，还是做些别的事，这不是同步机制所关心的。</p>
 <p>异步其实类似，这里不再赘述。</p>
-<p>最后用那个帖子里的一个回复来说明下问题吧，假设你要买一本书，现在你要问老板有没有，这时候你要去问下老板，于是乎，有了以下这几种情况：<br><strong>同步阻塞</strong>：你打电话问老板有没有某书，老板去查，在老板给你结果之前，你一直拿着电话等待老板给你结果，你此时什么也干不了。<br><strong>同步非阻塞</strong>：你打电话过去后，在老板给你结果之前，你拿着电话等待老板给你结果，但是你拿着电话等的时候可以干一些其他事，比如嗑瓜子。<br><strong>异步阻塞</strong>：你打电话过去后，老板去查，你挂掉电话，等待老板给你打电话通知你，这是异步，你挂了电话后还是啥也干不了，只能一直等着老板给你打电话告诉你结果，这是阻塞。<br><strong>异步非阻塞</strong>：你打电话过去后，你就挂了电话，然后你就想干嘛干嘛去。只用时不时去看看老板给你打电话没。</p>
+<p>最后用那个帖子里的一个回复来说明下问题吧，假设你要买一本书，现在你要问老板有没有，这时候你要去问下老板，于是乎，有了以下这几种情况：</p>
+<blockquote>
+<p> <strong>同步阻塞</strong>：你打电话问老板有没有某书，老板去查，在老板给你结果之前，你一直拿着电话等待老板给你结果，你此时什么也干不了。<br> <strong>同步非阻塞</strong>：你打电话过去后，在老板给你结果之前，你拿着电话等待老板给你结果，但是你拿着电话等的时候可以干一些其他事，比如嗑瓜子。<br> <strong>异步阻塞</strong>：你打电话过去后，老板去查，你挂掉电话，等待老板给你打电话通知你，这是异步，你挂了电话后还是啥也干不了，只能一直等着老板给你打电话告诉你结果，这是阻塞。<br> <strong>异步非阻塞</strong>：你打电话过去后，你就挂了电话，然后你就想干嘛干嘛去。只用时不时去看看老板给你打电话没。</p>
+</blockquote>
+<h4 id="2、IO模型"><a href="#2、IO模型" class="headerlink" title="2、IO模型"></a>2、IO模型</h4><p>聊完前面的几个概念之后，我们再来看IO模型的时候理解起来就比较轻松了。常见的几种IO模型有：</p>
+<blockquote>
+<p> 传统IO——同步阻塞IO</p>
+<p> NONBLOCK的socket——同步非阻塞IO</p>
+<p> IO多路复用(Reactor设计模式)——异步阻塞IO</p>
+<p> Proactor设计模式——异步非阻塞IO</p>
+</blockquote>
+<p>我们这里讨论的就是IO多路复用，也就是epoll，当然还包括select和poll这两个前辈，这三个IO多路复用机制都是属于异步阻塞IO。</p>
+<h5 id="read"><a href="#read" class="headerlink" title="read()"></a>read()</h5><p>首先，让我们从最原始的IO模型说起，也就是<code>read()</code>。read的函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">size_t</span> <span class="title">read</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> count)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>read函数向操作系统发起一个IO申请，申请从指定的文件描述符fd中读取数据，存放至buf缓冲区当中，每次最多读取count个字节。read这个函数在文件操作和socket编程中常常会使用到。</p>
+<p>例如在socket通信中，如果我们使用默认的socket，那么在发起read请求之后，在尚未有数据通过网络传输至网口上时，进程会一直阻塞。假设此时有数据通过网络传输至网口上时，网口会产生硬件中断，通知CPU有数据到达，此时CPU会进行上下文切换，陷入网卡的中断处理程序当中，将网卡内的数据读取至内存当中。将数据拷贝至内存中后，CPU退出中断处理程序，告诉read函数socket的输出缓冲区中已经有数据了，此时read将数据从内核中拷贝至进程的地址空间(buf缓冲区)当中，并返回读取到的字节数。这就是一次read的全部流程。</p>
+<p><code>read()</code>是最为简单的一种IO模型，使用起来很简单，但是问题也很明显，那就是他一次只能监听一个文件描述符，如果我要监听多个文件描述符，那么我就得创建多个线程去分别监听不同的文件描述符，这无疑是一件十分浪费资源的事。</p>
+<h5 id="select"><a href="#select" class="headerlink" title="select()"></a>select()</h5><p>因此，<code>select()</code>出现了。它的函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">select</span><span class="params">(<span class="keyword">int</span> nfds, fd_set *readfds, fd_set *writefds, </span></span></span><br><span class="line"><span class="function"><span class="params">           fd_set *exceptfds, struct timeval *timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p><code>select()</code>函数相比于<code>read()</code>或者<code>recv()</code>这种IO最大的优点就是，它允许进程监视多个文件描述符！</p>
+<p>当调用select()函数后，进程会进入阻塞状态，等待所监视的一个或者多个文件描述符变为ready状态。所谓的ready状态是指：文件描述符不再是阻塞状态，可以用于某类IO操作了，包括<strong>可读</strong>、<strong>可写</strong>、<strong>发生异常</strong>三种。</p>
+<p>nfds表示操作系统需要监听的文件描述符个数，这里实际上它的值应该为你所需要监听的最大的文件描述符+1，也就是说实际上操作系统监听了0~max_fd+1之间的所有文件描述符。select采用的是轮询机制，它会一直去检测fd_set中被监视的文件描述符是否有变为ready状态的，当其中的一个或者多个变为ready状态后，select函数会返回ready状态的文件描述符的个数。</p>
+<p><code>select()</code>解决了read和recv一次只能监听一个文件描述的问题，但是单个进程所能监听的文件描述符是有限的，并且采用了轮询机制，时间复杂度为O(n)，当文件描述符越多的时候，它的性能也就越差，并且会频繁的产生内核态与用户态之间的切换。</p>
+<h5 id="poll"><a href="#poll" class="headerlink" title="poll()"></a>poll()</h5><p><code>poll()</code>其实与<code>select()</code>没有太大的区别，它的原型如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int poll(struct pollfd fds[], nfds_t nfds, int timeout)；</span><br></pre></td></tr></table></figure>
+
+<p>poll和select实现功能差不多，但poll效率高，它通过一个结构体数组存放需要检测其状态的Socket描述符；每当调用这个函数之后，系统不会清空这个数组，操作起来比较方便；特别是对于socket连接比较多的情况下，在一定程度上可以提高处理的效率；这一点与select()函数不同，调用select()函数之后，select()函数会清空它所检测的socket描述符集合，导致每次调用select()之前都必须把socket描述符重新加入到待检测的集合中；因此，select()函数适合于只检测一个socket描述符的情况，而poll()函数适合于大量socket描述符的情况。</p>
+<h5 id="epoll"><a href="#epoll" class="headerlink" title="epoll()"></a>epoll()</h5><p>鉴于<code>poll()</code>和<code>select()</code>存在的诸多问题，Linux内核为处理大批量文件描述符，对<code>poll()</code>进行了改进之后，用<code>epoll()</code>取代了<code>poll()</code>。<code>epoll()</code>对于文件描述符的处理方式与前两个策略有所不同，<code>select()</code>在底层是用的数组去存储文件描述符，<code>poll()</code>则是用链表来存储，而epoll选择了用红黑树来存储文件描述符。</p>
+<p>epoll使用红黑树去<strong>监听</strong>并<strong>维护</strong>所有文件描述符，在调用<code>epoll_create()</code>时，内核除了帮我们在epoll文件系统里建了个file结点，在内核cache里建了个红黑树用于存储以后<code>epoll_ctl()</code>传来的socket外，<strong>还会再建立一个list链表，用于存储准备就绪的事件。</strong></p>
+<p>当调用epoll_wait()时，仅仅观察这个链表里有没有数据即可。有数据就返回，没有数据就sleep，等到timeout时间到后，即使链表没数据也返回。所以，<code>epoll_wait()</code>非常高效。而且，通常情况下即使我们要监控百万计的句柄，一次也只返回很少量的ready句柄而已，所以，<code>epoll_wait()</code>仅需要从内核态拷贝少量的句柄到用户态。</p>
+<p>当我们执行epoll_ctl()添加文件描述符时时，除了把fd放到epoll在文件系统里的对象对应的红黑树上之外，还会给内核中断处理程序注册一个回调函数，告诉内核，如果这个文件描述符的中断到了，就把它放到准备就绪链表里。所以，当一个socket上有数据到了，内核在把网卡上的数据copy到内核中后，就把对应socket的fd插入到准备就绪链表里了。</p>
+<p>epoll相比于select并不是在所有情况下都要高效，例如在如果有少于1024个文件描述符监听，且大多数socket都是出于活跃繁忙的状态，这种情况下，select要比epoll更为高效，因为epoll会有更多次的系统调用，用户态和内核态会有更加频繁的切换。</p>
+<p>epoll高效的本质在于：</p>
+<p>减少了用户态和内核态的文件句柄拷贝<br>减少了对可读可写文件句柄的遍历<br>mmap 加速了内核与用户空间的信息传递，epoll是通过内核与用户mmap同一块内存，避免了无谓的内存拷贝<br>IO性能不会随着监听的文件描述的数量增长而下降<br>使用红黑树存储fd，以及对应的回调函数，其插入，查找，删除的性能不错，相比于hash，不必预先分配很多的空间</p>
+<p><code>epoll()</code>对于打开的文件描述符没有限制，一般是基于系统内存，而这个数字一般远大于1024。</p>
+<p>传统的select/poll采用了轮询机制，导致它们的时间复杂度为O(n)。但是<code>epoll()</code>不存在这个问题，它只会对“活跃”的socket进行操作，这是因为在内核实现中，<code>epoll()</code>的回调机制是根据每个fd上面的回调函数实现的。那么，只有“活跃”的socket才会主动的去调用 callback函数，其他idle状态socket则不会。</p>
+<p><code>epoll()</code>有2种工作方式：LT和ET。</p>
+<ol>
+<li><p>LT(level triggered)，也就是水平触发，是缺省的工作方式，并且同时支持block和no-block socket。在这种做法中，内核告诉你一个文件描述符是否就绪了，然后你可以对这个就绪的fd进行IO操作。如果你不作任何操作，内核还是会继续通知你的，所以，这种模式编程出错误可能性要小一点。传统的select/poll都是这种模型的代表。</p>
+</li>
+<li><p>ET (edge-triggered)，也就是边缘触发，是高速工作方式，只支持non-block socket。在这种模式下，当描述符从未就绪变为就绪时，内核通过<code>epoll()</code>告诉你。然后它会假设你知道文件描述符已经就绪，并且不会再为那个文件描述符发送更多的就绪通知，直到你做了某些操作导致那个文件描述符不再为就绪状态了。但是请注意，如果一直不对这个fd作IO操作，内核不会发送更多的通知，也就是说，内核只会通知你一次。</p>
+</li>
+</ol>
+<p>ET和LT的区别就在这里体现，LT事件不会丢弃，而是只要读buffer里面有数据可以让用户读，则不断的通知你。而ET则只在事件发生之时通知。</p>
 <p>参考文章：</p>
 <p>[1] <a href="https://zhuanlan.zhihu.com/p/93609693" target="_blank" rel="noopener">深入理解Epoll</a></p>
 <p>[2] <a href="https://www.jianshu.com/p/397449cadc9a" target="_blank" rel="noopener">IO多路复用的三种机制Select，Poll，Epoll</a></p>
@@ -397,7 +442,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、阻塞、非阻塞、同步、异步"><span class="toc-number">1.</span> <span class="toc-text">1、阻塞、非阻塞、同步、异步</span></a></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、阻塞、非阻塞、同步、异步"><span class="toc-number">1.</span> <span class="toc-text">1、阻塞、非阻塞、同步、异步</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、IO模型"><span class="toc-number">2.</span> <span class="toc-text">2、IO模型</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#read"><span class="toc-number">2.1.</span> <span class="toc-text">read()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#select"><span class="toc-number">2.2.</span> <span class="toc-text">select()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#poll"><span class="toc-number">2.3.</span> <span class="toc-text">poll()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#epoll"><span class="toc-number">2.4.</span> <span class="toc-text">epoll()</span></a></li></ol></li></ol>
                     </div>
                 </span>
             </div>
