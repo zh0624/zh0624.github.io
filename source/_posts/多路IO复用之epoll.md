@@ -149,9 +149,143 @@ ET和LT的区别就在这里体现，LT事件不会丢弃，而是只要读buffe
 
 #### 3、epoll例程解析
 
-正在编写......
+1.ep.h
 
-随后更新^_^
+```C
+#include <stdio.h>
+#include <sys/epoll.h>
+#include <sys/types.h>
+#include <stdlib.h>
+#include <time.h>
+#include <error.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <netinet/in.h> /* 定义数据结构sockaddr_in */
+#include <arpa/inet.h>  /* 提供IP地址转换函数 */
+#include <string.h>
+#include <fcntl.h>
+
+#define EP_TABLE_MAX_NUM  20
+
+#define CLI_CONNECT_NUM   100
+
+#define LOG_STDOUT(format, ...)      \
+    do                               \
+    {                                \
+        printf(format, __VA_ARGS__); \
+    } while (0)
+
+```
+
+2.ep.c
+
+```C
+/*
+ * @Author: zhanghan
+ * @Date: 2020-08-21 01:15:22
+ * @Description:  demo of a simple epoll server
+ * @FilePath: \Rtsp_Server\src\ep.c
+ */
+#include "../lib/ep.h"
+
+int main(int argc, char argv[])
+{
+    int ep_fd = 0;
+    int nfds = 0;
+    int cli_len = 0;
+    int num=0;
+    struct sockaddr_in ser_addr, cli_addr;
+
+    ep_fd = epoll_create(1); //创建epoll的文件描述符
+
+    int ser_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    fcntl(ser_fd, fcntl(ser_fd, F_GETFL) | O_NONBLOCK); //将监听的 ser_fd 设为非阻塞模式
+
+    bzero((void *)&ser_addr, sizeof(ser_addr));
+    bzero((void *)&cli_addr, sizeof(cli_addr));
+    ser_addr.sin_family = AF_INET; /* sin_port和sin_addr都必须是网络字节序（NBO），一般可视化的数字都是主机字节序（HBO） */
+    ser_addr.sin_addr.s_addr = inet_addr("192.168.1.4");
+    ser_addr.sin_port = htons(8080);
+
+    bind(ser_fd, (struct sockaddr *)&ser_addr, sizeof(ser_addr));
+
+    if (listen(ser_fd, 100) < 0)
+    {
+        LOG_STDOUT("listen failed!\n", 0);
+    }
+
+    struct epoll_event ep_ev;
+    struct epoll_event ep_table[EP_TABLE_MAX_NUM];
+    ep_ev.data.fd = ep_fd;
+    ep_ev.events = EPOLLIN | EPOLLET;
+
+    if (epoll_ctl(ep_fd, EPOLL_CTL_ADD, ser_fd, &ep_ev) < 0)
+    {
+        LOG_STDOUT("ep_ctl failed!\n", 0);
+    }
+
+    for (;;)
+    {
+        nfds = epoll_wait(ep_fd, ep_table, EP_TABLE_MAX_NUM, 20);
+
+        if (nfds <= 0)
+            continue;
+        else
+        {
+            for (int i = 0; i < nfds; i++)
+            {
+                LOG_STDOUT("ep_wait success!\n", 0);
+                if (ep_table[i].data.fd == ser_fd)
+                {
+                    num++;
+                    accept(ser_fd, (struct sockaddr *)&cli_addr, &cli_len);
+                    LOG_STDOUT("recv connect from ip:%s,port:%d,num:%d\n", inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port,num);
+                }
+            }
+        }
+    }
+}
+```
+
+3.client.c
+
+```C
+/*
+ * @Author: zhanghan
+ * @Date: 2020-08-23 22:40:28
+ * @Description:
+ * @FilePath: \Rtsp_Server\test_client\client.c
+ */
+#include "../lib/ep.h"
+
+int main()
+{
+    struct sockaddr_in ser_addr, cli_addr;
+    int ser_len, cli_len;
+
+    bzero((void *)&ser_addr, sizeof(ser_addr));
+    bzero((void *)&cli_addr, sizeof(cli_addr));
+
+    cli_addr.sin_family = AF_INET;
+    cli_addr.sin_addr.s_addr = inet_addr("192.168.1.5");
+    cli_addr.sin_port = htons(1554);
+
+    ser_addr.sin_family = AF_INET;
+    ser_addr.sin_addr.s_addr = inet_addr("192.168.1.4");
+    ser_addr.sin_port = htons(8080);
+
+    for (int i; i < CLI_CONNECT_NUM; i++)
+    {
+        int cli_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        fcntl(cli_fd, fcntl(cli_fd, F_GETFL) | O_NONBLOCK);
+        bind(cli_fd, (struct sockaddr *)&cli_addr, sizeof(cli_addr));
+
+        connect(cli_fd, (struct sockaddr *)&ser_addr, sizeof(cli_addr));
+    }
+    return 0;
+}
+
+```
 
 参考文章：
 
