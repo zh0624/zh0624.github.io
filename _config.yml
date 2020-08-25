@@ -73,6 +73,7 @@ tag_map:
      进程间通信: IPC
      工具: Tool
      操作系统: os
+     杂项: other
 
 # Metadata elements
 ## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta
