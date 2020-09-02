@@ -136,3 +136,13 @@ music:
   autoplay: false  # 是否开启自动播放
 
 aboutme: 很惭愧<br><br>只做了一点微小的工作<br>谢谢大家
+
+#6、Valine https://valine.js.org
+valine: 
+  appid: aIJmeck02DIo0AzpFF9lzwcY-gzGzoHsz
+  appkey: 1rGGAGoFh7EEihUVQU6YQUVl
+  verify: false #验证码，verify和notify这两个最好就别动了
+  notify: false #评论回复提醒
+  avatar: mm #评论列表头像样式：''/mm/identicon/monsterid/wavatar/retro/hide
+  placeholder: Just go go #评论框占位符
+
