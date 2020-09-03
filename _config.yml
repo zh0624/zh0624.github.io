@@ -73,6 +73,7 @@ tag_map:
      进程间通信: IPC
      工具: Tool
      操作系统: os
+     开源: opensource
      杂项: other
 
 # Metadata elements
