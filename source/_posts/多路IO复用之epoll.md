@@ -111,19 +111,27 @@ poll和select实现功能差不多，但poll效率高，它通过一个结构体
 
 ##### epoll()
 
-鉴于`poll()`和`select()`存在的诸多问题，Linux为处理大批量文件描述符，对`poll()`进行改进后用`epoll()`取而代之。`epoll()`对于文件描述符的处理方式与前两个策略有所不同： `select()`在底层是用的数组去存储文件描述符，`poll()`则是用链表来存储，而epoll选择了用红黑树来存储文件描述符。
+鉴于`poll()`和`select()`存在的诸多问题，Linux为处理大批量文件描述符，对`poll()`进行改进后用`epoll()`取而代之。`epoll()`对于文件描述符的处理方式与前两个策略有所不同： `select()`在底层是用的数组去存储文件描述符，`poll()`则是用链表来存储，而epoll选择了用**红黑树**来存储文件描述符。
+
+epoll()的三个主要函数：
+
+```C
+/*创建一个epoll文件描述符--epfd，其中size目前无实际意义，取址大于0即可*/
+int epoll_create(int size) ； 
+/* epfd的控制函数，用于增加/删除epoll句柄上监听的文件描述符，或者修改其模式。
+op为epoll_ctl的动作，有三种：EPOLL_CTL_ADD、 EPOLL_CTL_MOD、EPOLL_CTL_DEL。
+fd为被增加/删除/修改的文件描述符
+event为描述需要监听事件的结构体。*/    
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event) ； 
+/*等待epfd上所有监听的文件描述符，直到有事件触发或timeout超时，timeout=0立即返回，timeout=-1阻塞*/
+int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
+```
 
 epoll使用红黑树去**监听**并**维护**所有文件描述符，在调用`epoll_create()`时，内核除了帮我们在epoll文件系统里建了个file结点，在内核cache里建了个红黑树用于存储以后`epoll_ctl()`传来的socket外，**还会再建立一个list链表，用于存储准备就绪的事件。**当调用`epoll_wait()`时，仅仅观察这个链表里有没有数据即可。有数据就返回，没有数据就sleep，等到timeout时间到后，即使链表没数据也返回。所以，`epoll_wait()`非常高效。
 
-当我们执行`epoll_ctl()`添加文件描述符时时，除了把fd放到epoll在文件系统里的对象上对应的红黑树上之外，还会给内核中断处理程序注册一个回调函数，这个回调函数的功能是告诉内核，如果这个文件描述符的中断到了，就把它放到准备就绪链表里。所以，epoll()可以从就绪链表中，只对活跃或者说就绪状态的文件描述符调用回调函数，这可以显著的提升它的效率。因此，epoll()返回就绪的文件描述符的时间复杂度为O(1)。
-
-与此同时，`epoll_wait()`也仅需要从内核态拷贝少量的文件描述符到用户态
-
-当我们执行`epoll_ctl()`添加文件描述符时时，除了把fd放到epoll在文件系统里的对象上对应的红黑树上之外，还会给内核中断处理程序注册一个回调函数，这个回调函数的功能是告诉内核，如果这个文件描述符的中断到了，就把它放到准备就绪链表里。所以，当一个socket上有数据到了，内核在把网卡上的数据copy到内核中后，就把对应socket的fd插入到准备就绪链表里了。通常情况下即使我们要监控数以百万计的文件描述符，一次也只返回很少量“就绪”的文件描述符而已，因此，`epoll_wait()`仅需要从内核态拷贝少量的文件描述符到用户态，这是它相比于其他IO多路复用机制的一个显著优点。
+当我们执行`epoll_ctl()`添加文件描述符时时，除了把fd放到epoll在文件系统里的对象上对应的红黑树上之外，还会给内核中断处理程序注册一个回调函数，这个回调函数的功能是告诉内核，如果这个文件描述符的中断到了，就把它放到准备就绪链表里。所以，epoll()可以从就绪链表中，只对活跃或者说就绪状态的文件描述符调用回调函数，这可以显著的提升它的效率。因此，epoll()返回就绪的文件描述符的时间复杂度为O(1)。当一个socket上有数据到了，内核在把网卡上的数据copy到内核中后，就把对应socket的fd插入到准备就绪链表里了。通常情况下即使我们要监控数以百万计的文件描述符，一次也只返回很少量“就绪”的文件描述符而已，因此，`epoll_wait()`仅需要从内核态拷贝少量的文件描述符到用户态，这是它相比于其他IO多路复用机制的一个显著优点。
 
 `epoll()`对于打开的文件描述符没有限制，一般是基于系统内存，而这个数字一般远大于1024。
-
-传统的select/poll采用了轮询机制，导致它们的时间复杂度为O(n)。但是`epoll()`不存在这个问题，它只会对“活跃”的socket进行操作，这是因为在内核实现中，`epoll()`的回调机制是根据每个fd上面的回调函数实现的。那么，只有“活跃”的socket才会主动的去调用 callback函数，其他idle状态socket则不会。
 
 然而，epoll相比于select并不是在所有情况下都要高效，例如在如果有少于1024个文件描述符监听，且大多数socket都是出于活跃繁忙的状态，这种情况下，select要比epoll更为高效，因为epoll会有更多次的系统调用，用户态和内核态会有更加频繁的切换。
 
@@ -149,7 +157,13 @@ ET和LT的区别就在这里体现，LT事件不会丢弃，而是只要读buffe
 
 #### 3、epoll例程解析
 
-1.ep.h
+以epoll三个基本函数实现了一个回声服务端+客户端的小例程。
+
+功能是将客户端输入的字符转换为大写后返回。可以设置最大连接数量，超出的连接被丢弃。代码比较简陋，待完善。
+
+代码放在码云上了，链接：[myepolldemo](https://gitee.com/zhanghh0624/myepolldemo)
+
+**1.ep.h  头文件**
 
 ```C
 #include <stdio.h>
@@ -164,60 +178,72 @@ ET和LT的区别就在这里体现，LT事件不会丢弃，而是只要读buffe
 #include <arpa/inet.h>  /* 提供IP地址转换函数 */
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <ctype.h>
 
-#define EP_TABLE_MAX_NUM  20
+#define EP_TABLE_MAX_NUM  20   /* epoll最大处理 fd 数量 */
 
-#define CLI_CONNECT_NUM   100
+#define CLI_CONNECT_NUM   2  /* 客户端最大连接数 */
 
-#define LOG_STDOUT(format, ...)      \
+#define BUF_SIZE 1000          /* recv/send buf大小 */
+
+#define SER_PORT 11111         /* 服务端监听端口 */
+#define CLI_PORT 12111         /* 客户端绑定起始端口 */
+
+#define THROW_ERR  strerror(errno)
+
+#define SER_IP "192.168.1.6" /* 服务端ip */
+#define CLI_IP "192.168.1.6" /* 客户端ip */
+
+/* LOG，调试用函数，直接打印输出*/
+#define LOG_STDOUT(format, ...)      \  
     do                               \
     {                                \
-        printf(format, __VA_ARGS__); \
+        printf(format, ##__VA_ARGS__); \
     } while (0)
-
 ```
 
-2.ep.c
+**2.ep.c   服务端部分**
 
 ```C
-/*
- * @Author: zhanghan
- * @Date: 2020-08-21 01:15:22
- * @Description:  demo of a simple epoll server
- * @FilePath: \Rtsp_Server\src\ep.c
- */
 #include "../lib/ep.h"
 
 int main(int argc, char argv[])
 {
     int ep_fd = 0;
+    int cli_fd = 0;
     int nfds = 0;
     int cli_len = 0;
-    int num=0;
+    int CLI_NUM = 0;
+    int ret = 0;
+
     struct sockaddr_in ser_addr, cli_addr;
 
-    ep_fd = epoll_create(1); //创建epoll的文件描述符
+    ep_fd = epoll_create(1); /* 创建epoll的文件描述符 */
 
     int ser_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    fcntl(ser_fd, fcntl(ser_fd, F_GETFL) | O_NONBLOCK); //将监听的 ser_fd 设为非阻塞模式
+    set_noblocking(ser_fd); /* epoll监听的文件描述符需要设置为非阻塞模式 */
 
     bzero((void *)&ser_addr, sizeof(ser_addr));
     bzero((void *)&cli_addr, sizeof(cli_addr));
     ser_addr.sin_family = AF_INET; /* sin_port和sin_addr都必须是网络字节序（NBO），一般可视化的数字都是主机字节序（HBO） */
-    ser_addr.sin_addr.s_addr = inet_addr("192.168.1.4");
-    ser_addr.sin_port = htons(8080);
+    ser_addr.sin_addr.s_addr = inet_addr(SER_IP);
+    ser_addr.sin_port = htons(SER_PORT);
 
-    bind(ser_fd, (struct sockaddr *)&ser_addr, sizeof(ser_addr));
-
-    if (listen(ser_fd, 100) < 0)
+    if ((ret = bind(ser_fd, (struct sockaddr *)&ser_addr, sizeof(ser_addr))) == -1)
     {
-        LOG_STDOUT("listen failed!\n", 0);
+        LOG_STDOUT("bind failed!%s\n", THROW_ERR);
+    }
+
+    if (listen(ser_fd, 100) == -1)
+    {
+        LOG_STDOUT("listen failed!%s\n", THROW_ERR);
     }
 
     struct epoll_event ep_ev;
-    struct epoll_event ep_table[EP_TABLE_MAX_NUM];
-    ep_ev.data.fd = ep_fd;
-    ep_ev.events = EPOLLIN | EPOLLET;
+    struct epoll_event ep_table[EP_TABLE_MAX_NUM]; /* epoll_wait返回的描述符存放在这个结构体数组中 */
+    ep_ev.data.fd = ser_fd;                        /* 监听的文件描述符为ser_fd */
+    ep_ev.events = EPOLLIN;                        /* 监听ser_fd的输入事件，即连接请求 */
 
     if (epoll_ctl(ep_fd, EPOLL_CTL_ADD, ser_fd, &ep_ev) < 0)
     {
@@ -226,66 +252,135 @@ int main(int argc, char argv[])
 
     for (;;)
     {
-        nfds = epoll_wait(ep_fd, ep_table, EP_TABLE_MAX_NUM, 20);
+        nfds = epoll_wait(ep_fd, ep_table, EP_TABLE_MAX_NUM, -1);
 
-        if (nfds <= 0)
+        if (nfds <= 0) /* 无描述符触发事件 */
             continue;
         else
         {
             for (int i = 0; i < nfds; i++)
             {
-                LOG_STDOUT("ep_wait success!\n", 0);
-                if (ep_table[i].data.fd == ser_fd)
+                if (ep_table[i].data.fd == ser_fd) /* 有连接请求接入 */
                 {
-                    num++;
-                    accept(ser_fd, (struct sockaddr *)&cli_addr, &cli_len);
-                    LOG_STDOUT("recv connect from ip:%s,port:%d,num:%d\n", inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port,num);
+                    CLI_NUM++; /* 接入计数+1 */
+                    cli_fd = accept(ser_fd, (struct sockaddr *)&cli_addr, &cli_len);
+
+                    if (CLI_NUM <= CLI_CONNECT_NUM) /* 小于组大连接数 */
+                        LOG_STDOUT("recv connect from ip:%s,port:%d,client num:%d\n", inet_ntoa(cli_addr.sin_addr), ntohs(cli_addr.sin_port), CLI_NUM);
+                    else
+                    {
+                        LOG_STDOUT("Too much connect...\n");
+                        close(cli_fd);
+                        continue;
+                    }
+
+                    /* 将接入的用户加入epoll的监听队列 */
+                    set_noblocking(cli_fd);
+                    ep_ev.data.fd = cli_fd;
+                    ep_ev.events = EPOLLIN | EPOLLET;
+                    if (epoll_ctl(ep_fd, EPOLL_CTL_ADD, cli_fd, &ep_ev) < 0)
+                    {
+                        perror("epoll ctl:");
+                    }
+
+                    continue;
                 }
+
+                /* 有客户端写入数据 */
+                if (handle(cli_fd) < 0)
+                    perror("handle:");
             }
         }
     }
+close:
+    close(ep_fd);
+
+    LOG_STDOUT("Server is closing......\n");
+    return 0;
+}
+
+int set_noblocking(int fd)
+{
+    if ((fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK)) < 0)
+        perror("set fd noblock:");
+}
+/* 处理用户数据，转换为大写，并返回总长度。 */
+int handle(int fd)
+{
+    char recv_buf[BUF_SIZE] = {0};
+    char send_buf[BUF_SIZE] = {0};
+    int ret;
+    if (recv(fd, recv_buf, BUF_SIZE, 0) < 0)
+    {
+        return -1;
+    }
+    LOG_STDOUT("%s", recv_buf);
+    for (int i = 0; recv_buf[i] != '\n'; i++)
+    {
+        recv_buf[i] = toupper(recv_buf[i]);
+    }
+
+    if ((ret = send(fd, recv_buf, BUF_SIZE, 0)) < 0)
+    {
+        return -1;
+    }
+    return ret;
 }
 ```
 
-3.client.c
+**3.client.c     客户端部分**
 
 ```C
-/*
- * @Author: zhanghan
- * @Date: 2020-08-23 22:40:28
- * @Description:
- * @FilePath: \Rtsp_Server\test_client\client.c
- */
 #include "../lib/ep.h"
 
 int main()
 {
     struct sockaddr_in ser_addr, cli_addr;
     int ser_len, cli_len;
+    int ret = 0;
+    int num = 0;
+    char recv_buf[BUF_SIZE] = {0};
+    char send_buf[BUF_SIZE] = {0};
 
     bzero((void *)&ser_addr, sizeof(ser_addr));
     bzero((void *)&cli_addr, sizeof(cli_addr));
 
     cli_addr.sin_family = AF_INET;
-    cli_addr.sin_addr.s_addr = inet_addr("192.168.1.5");
-    cli_addr.sin_port = htons(1554);
+    cli_addr.sin_addr.s_addr = inet_addr(CLI_IP);
+    cli_addr.sin_port = htons(CLI_PORT);
 
     ser_addr.sin_family = AF_INET;
-    ser_addr.sin_addr.s_addr = inet_addr("192.168.1.4");
-    ser_addr.sin_port = htons(8080);
+    ser_addr.sin_addr.s_addr = inet_addr(SER_IP);
+    ser_addr.sin_port = htons(SER_PORT);
 
-    for (int i; i < CLI_CONNECT_NUM; i++)
+    int cli_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    bind(cli_fd, (struct sockaddr *)&cli_addr, sizeof(cli_addr));
+    if ((ret = connect(cli_fd, (struct sockaddr *)&ser_addr, sizeof(cli_addr))) == -1)
     {
-        int cli_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        fcntl(cli_fd, fcntl(cli_fd, F_GETFL) | O_NONBLOCK);
-        bind(cli_fd, (struct sockaddr *)&cli_addr, sizeof(cli_addr));
-
-        connect(cli_fd, (struct sockaddr *)&ser_addr, sizeof(cli_addr));
+        LOG_STDOUT("Connect error!%s\n", strerror(errno));
     }
+
+    while (1)
+    {
+        memset(send_buf, 0, BUF_SIZE);
+        memset(recv_buf, 0, BUF_SIZE);
+        if (fgets(send_buf, BUF_SIZE, stdin) == NULL)
+            break;
+        send(cli_fd, send_buf, BUF_SIZE, 0);
+        recv(cli_fd, recv_buf, BUF_SIZE, 0);
+        LOG_STDOUT("%s", recv_buf);
+        if (num == 100)
+            break;
+    }
+    close(cli_fd);
+
     return 0;
 }
-
 ```
+
+有不完善的地方会定期更新。
+
+以上。
 
 参考文章：
 
