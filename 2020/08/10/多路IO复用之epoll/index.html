@@ -17,7 +17,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://s1.ax1x.com/2020/08/11/aq5Z0f.jpg">
 <meta property="article:published_time" content="2020-08-10T15:45:00.000Z">
-<meta property="article:modified_time" content="2020-09-03T15:31:07.147Z">
+<meta property="article:modified_time" content="2020-09-03T16:53:02.541Z">
 <meta property="article:author" content="BugCode">
 <meta property="article:tag" content="操作系统">
 <meta property="article:tag" content="同步">
@@ -284,12 +284,9 @@
 <p>然而，epoll相比于select并不是在所有情况下都要高效，例如在如果有少于1024个文件描述符监听，且大多数socket都是出于活跃繁忙的状态，这种情况下，select要比epoll更为高效，因为epoll会有更多次的系统调用，用户态和内核态会有更加频繁的切换。</p>
 <p>最后说下<code>epoll()</code>的2种工作方式：LT和ET。</p>
 <ol>
-<li><p>LT(level triggered)，也就是水平触发，是缺省的工作方式，并且同时支持block和no-block socket。在这种做法中，内核告诉你一个文件描述符是否就绪了，然后你可以对这个就绪的fd进行IO操作。如果你不作任何操作，内核还是会继续通知你的，所以，这种模式编程出错误可能性要小一点。传统的select/poll都是这种模型的代表。</p>
-</li>
-<li><p>ET (edge-triggered)，也就是边缘触发，是高速工作方式，只支持non-block socket。在这种模式下，当描述符从未就绪变为就绪时，内核通过<code>epoll()</code>告诉你。然后它会假设你知道文件描述符已经就绪，并且不会再为那个文件描述符发送更多的就绪通知，直到你做了某些操作导致那个文件描述符不再为就绪状态了。但是请注意，如果一直不对这个fd作IO操作，内核不会发送更多的通知，也就是说，内核只会通知你一次。</p>
-</li>
+<li>LT(level triggered)，也就是水平触发，是缺省的工作方式，并且同时支持block和no-block socket。在这种做法中，内核告诉你一个文件描述符是否就绪了，然后你可以对这个就绪的fd进行IO操作。如果你不作任何操作，内核还是会继续通知你的，所以，这种模式编程出错误可能性要小一点。传统的select/poll都是这种模型的代表。</li>
+<li>ET (edge-triggered)，也就是边缘触发，是高速工作方式，只支持non-block socket。在这种模式下，当描述符从未就绪变为就绪时，内核通过<code>epoll()</code>告诉你。然后它会假设你知道文件描述符已经就绪，并且不会再为那个文件描述符发送更多的就绪通知，直到你做了某些操作导致那个文件描述符不再为就绪状态了。但是请注意，如果一直不对这个fd作IO操作，内核不会发送更多的通知，也就是说，内核只会通知你一次。ET和LT的区别就在这里体现，LT事件不会丢弃，而是只要读buffer里面有数据可以让用户读，则不断的通知你。而ET则只在事件发生之时通知。</li>
 </ol>
-<p>ET和LT的区别就在这里体现，LT事件不会丢弃，而是只要读buffer里面有数据可以让用户读，则不断的通知你。而ET则只在事件发生之时通知。</p>
 <p>总结，<code>epoll()</code>高效的本质在于：</p>
 <blockquote>
 <p>减少了用户态和内核态的文件句柄拷贝</p>
