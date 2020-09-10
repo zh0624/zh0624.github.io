@@ -3,12 +3,12 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Segmentation Fault
+title: 咸鱼小站
 subtitle: 'Learning, and coding.'
 description: '╮(￣▽ ￣)╭	'
 keywords:
-author: BugCode
-language: zh_CN
+author: HZhang
+language: zh-Hans
 timezone: 'Asia/Shanghai'
 
 # URL
@@ -64,17 +64,18 @@ index_generator:
 # Category & Tag
 default_category: categorized
 category_map:
-     编程: programming  
-     生活: life
-     相册: photo
-     随笔: essay
-     其他: other
+  主页: home
+  编程: program  
+  生活: life
+  相册: photo
+  随笔: essay
+  其他: other
 tag_map:
-     进程间通信: IPC
-     工具: Tool
-     操作系统: os
-     开源: opensource
-     杂项: other
+  进程间通信: IPC
+  工具: Tool
+  操作系统: os
+  开源: opensource
+  杂项: other
 
 # Metadata elements
 ## https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta
@@ -103,7 +104,7 @@ ignore:
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: hexo-theme-yilia
+theme: next
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
@@ -113,20 +114,29 @@ deploy:
   branch: master
 
 jsonContent:
-    meta: false
-    pages: false
-    posts:
-      title: true
-      date: true
-      path: true
-      text: false
-      raw: false
-      content: false
-      slug: false
-      updated: false
-      comments: false
-      link: false
-      permalink: false
-      excerpt: false
-      categories: false
-      tags: true
+  meta: false
+  pages: false
+  posts:
+  title: true
+  date: true
+  path: true
+  text: false
+  raw: false
+  content: false
+  slug: false
+  updated: false
+  comments: false
+  link: false
+  permalink: false
+  excerpt: false
+  categories: false
+  tags: true
+
+
+symbols_count_time:
+  #文章内是否显示
+  symbols: true
+  time: true
+  # 网页底部是否显示
+  total_symbols: true
+  total_time: true
