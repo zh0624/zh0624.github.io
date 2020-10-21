@@ -6,16 +6,22 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Tag: 数据结构 | 咸鱼小站</title>
+  <title>动态编译符号表冲突的解决方案 | 咸鱼小站</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="╮(￣▽ ￣)╭">
-<meta property="og:type" content="website">
-<meta property="og:title" content="咸鱼小站">
-<meta property="og:url" content="http://yoursite.com/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/index.html">
+  <meta name="description" content="近期在工作当中遇见了一个问题，记录一下分析和学习的过程。项目上近期提供了一个工具，需要我们调用这个工具的动态库中的部分函数来完成业务逻辑，其中一个函数A使用了某个系统提供的动态库，假设它调用了系统动态库中的函数B1。 偏偏很不凑巧的是，我们的版本之前也曾经将这个动态库用静态编译的方式集成进来，也就是说，我们的版本里也有一个与函数B1同名的函数，这里称之为B2吧。此时就导致了一个很诡异的现象——">
+<meta property="og:type" content="article">
+<meta property="og:title" content="动态编译符号表冲突的解决方案">
+<meta property="og:url" content="http://yoursite.com/2020/10/21/%E5%8A%A8%E6%80%81%E7%BC%96%E8%AF%91%E7%AC%A6%E5%8F%B7%E8%A1%A8%E5%86%B2%E7%AA%81%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/index.html">
 <meta property="og:site_name" content="咸鱼小站">
-<meta property="og:description" content="╮(￣▽ ￣)╭">
+<meta property="og:description" content="近期在工作当中遇见了一个问题，记录一下分析和学习的过程。项目上近期提供了一个工具，需要我们调用这个工具的动态库中的部分函数来完成业务逻辑，其中一个函数A使用了某个系统提供的动态库，假设它调用了系统动态库中的函数B1。 偏偏很不凑巧的是，我们的版本之前也曾经将这个动态库用静态编译的方式集成进来，也就是说，我们的版本里也有一个与函数B1同名的函数，这里称之为B2吧。此时就导致了一个很诡异的现象——">
+<meta property="og:image" content="https://s1.ax1x.com/2020/10/21/BPcWQS.jpg">
+<meta property="article:published_time" content="2020-10-21T14:39:00.000Z">
+<meta property="article:modified_time" content="2020-10-21T16:00:22.609Z">
 <meta property="article:author" content="HZhang">
+<meta property="article:tag" content="杂项">
+<meta property="article:tag" content="基础">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2020/10/21/BPcWQS.jpg">
   
     <link rel="alternative" href="/atom.xml" title="咸鱼小站" type="application/atom+xml">
   
@@ -171,52 +177,129 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-动态编译符号表冲突的解决方案" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2020" class="archive-year">2020</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/09/09/DFS%E5%92%8CBFS%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/" class="archive-article-date">
-  	<time datetime="2020-09-09T13:37:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-09-09</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/09/09/DFS%E5%92%8CBFS%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/">DFS和BFS学习记录</a>
+    <h1 class="article-title" itemprop="name">
+      动态编译符号表冲突的解决方案
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2020/10/21/%E5%8A%A8%E6%80%81%E7%BC%96%E8%AF%91%E7%AC%A6%E5%8F%B7%E8%A1%A8%E5%86%B2%E7%AA%81%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" class="archive-article-date">
+  	<time datetime="2020-10-21T14:39:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-21</time>
+</a>
+        
+        <!-- 目录内容 -->
+
+<!-- 目录内容结束 -->
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <img src="https://s1.ax1x.com/2020/10/21/BPcWQS.jpg" alt="动态编译符号表冲突的解决方案" style="zoom:40%;" />
+
+<p>近期在工作当中遇见了一个问题，记录一下分析和学习的过程。项目上近期提供了一个工具，需要我们调用这个工具的动态库中的部分函数来完成业务逻辑，其中一个函数A使用了某个系统提供的动态库，假设它调用了系统动态库中的函数B1。</p>
+<p>偏偏很不凑巧的是，我们的版本之前也曾经将这个动态库用静态编译的方式集成进来，也就是说，我们的版本里也有一个与函数B1同名的函数，这里称之为B2吧。此时就导致了一个很诡异的现象——当我们使用动态链接的方式将版本编译出来，执行可执行文件，函数A没有去调用系统动态库中的函数B1，而是调用了版本当中的函数B2，这时就会产生段错误或者其他的一些意想不到的情况。</p>
+<p>下面就来分析一下为什么会出现这样的情况。</p>
+<a id="more"></a>
+
+<h4 id="1-静态编译与动态编译"><a href="#1-静态编译与动态编译" class="headerlink" title="1.静态编译与动态编译"></a>1.静态编译与动态编译</h4><p>首先，让我们先来弄明白什么是静态编译和动态编译。网上相关的介绍很多，这里就不再自己手码了，贴下网上的一些介绍：</p>
+<blockquote>
+<p> <strong>动态编译</strong>：动态编译的可执行文件需要附带一个的动态链接库，在执行时，需要调用其对应动态链接库中的命令。所以其优点一方面是缩小了执行文件本身的体积，另一方面是加快了编译速度，节省了系统资源。缺点一是哪怕是很简单的程序，只用到了链接库中的一两条命令，也需要附带一个相对庞大的链接库；二是如果其他计算机上没有安装对应的运行库，则用动态编译的可执行文件就不能运行。</p>
+<p><strong>静态编译</strong>：静态编译就是编译器在编译可执行文件的时候，将可执行文件需要调用的对应静态链接库(.a)中的部分提取出来，链接到可执行文件中去，使可执行文件在运行的时候不依赖于静态链接库。所以其优缺点与动态编译的可执行文件正好互补。</p>
+</blockquote>
+<p>直白的说，动态编译的可执行文件需要依赖动态库，执行的时候需要去动态库中去链接执行的代码片段。而静态编译则不需要，因为所有需要的代码已经被链接到可执行文件当中了。</p>
+<h4 id="2-符号表"><a href="#2-符号表" class="headerlink" title="2.符号表"></a>2.符号表</h4><p>再谈一下符号表，可执行文件、动态库、静态库都具有符号表，可以通过nm命令查看。符号和符号表的主要作用就是让链接器在链接时能够定位到目标文件当中的某一段代码。链接器的输入是一组可重定位目标模块，每个模块当中都定义了一组符号，有些是局部的，即只对定义该符号的模块可见，有些是全局的，即对其他模块也是可见的。如果多个模块定义了同名的全局符号，就会发生之前我所提到的那种情况。</p>
+<p>根据CSAPP中对Linux系统编译时动作的解释，我们可以知道，在编译时，编译器会向汇编器输出每个全局符号，可能是强符号也可能是弱符号，汇编器会把这个信息隐含地编码在可重定位目标文件的符号表中。其中，函数和已初始化的全局变量是强符号，未初始化的全局变量是弱符号。</p>
+<p>而对强弱符号，Linux的规则如下：</p>
+<blockquote>
+<p>规则1：不允许有同名的强符号</p>
+<p>规则2：如果有一个强符号和多个弱符号同名，取强符号</p>
+<p>规则3：如果多个弱符号重名，随机选取一个</p>
+</blockquote>
+<h4 id="3-问题分析及解决方案"><a href="#3-问题分析及解决方案" class="headerlink" title="3.问题分析及解决方案"></a>3.问题分析及解决方案</h4><p>如果将一个静态库链接到可执行文件当中，当我们尝试将动态库链接进来的时候，静态库中的函数优先级是高于动态库的(具体原因还不能很明确的给出来，仍待修炼……准备生啃程序员的自我修养)。这就导致我们明明想要执行的是动态库中的函数，结果执行的却是静态库中的函数。</p>
+<p>这里暂时想到且能实现的方案有两个：</p>
+<blockquote>
+<p>1、更换静态库/动态库的函数名称—从根源解决问题，但是有点蠢。</p>
+<p>2、使用<code>dlopen()</code>指定使用动态库中的函数(有点繁琐，但是不必改名)。</p>
+</blockquote>
+<p>第一个就不细说了，谁都会。主要说下第二个方法。<code>dlopen()</code>可以以指定模式打开指定的动态链接库文件，并返回一个句柄给<code>dlsym()</code>的调用进程，可以使用<code>dlclose()</code>来卸载打开的库。</p>
+<p>以下示例：</p>
+<p>先定义一个函数<code>Test_Fcn()</code>，这里就不用静态库了，直接在源文件中编码。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Test_Fcn</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Test_Fcn();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Test_Fcn</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"This function is in main.o!\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行的话，毫无疑问，输出为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">This function is in main.o!</span><br></pre></td></tr></table></figure>
+
+<p>我们再编写一个<code>libtest.c</code>，动态编译为<code>libtest.so</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Test_Fcn</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"This function is in libtest.so!\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行命令：<code>gcc -fPIC -shared libtest.c -o libtest.so</code>即可，此时再用动态链接的方式编译<code>main.c</code>。再次执行可执行文件，不出意料，结果仍然为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">This function is in main.o!</span><br></pre></td></tr></table></figure>
+
+<p>显然，我们编写的动态库没有生效，执行<code>nm main |grep Test_Fcn</code>，可以得到<code>000000000040064b T Test_Fcn</code>，其中的<code>T</code>代表<code>Test_Fcn</code>函数位于可执行文件的代码区，也就是说已经被链接到可执行文件中来了，显然不是动态编译。</p>
+<p>此时我们对<code>main.c</code>进行下修改，使用<code>dlopen()</code>来强制指定使用so中的函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;dlfcn.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Test_Fcn</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">int</span><span class="params">(*FCN)</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">void</span>* handler=dlopen(<span class="string">"./libtest.so"</span>,RTLD_LAZY);</span><br><span class="line">    FCN Test_Fcn=dlsym(handler,<span class="string">"Test_Fcn"</span>);</span><br><span class="line">    Test_Fcn();</span><br><span class="line">    dlclose(handler);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Test_Fcn</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"This function is in main.o!\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时再次执行就可以发现，输出变为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">This function is in libtest.so!</span><br></pre></td></tr></table></figure>
+
+<p>这里成功的调用了我们在动态库中编写的<code>Test_Fcn()</code>。通过<code>nm</code>指令可以发现<code>Test_Fcn</code>仍然在可执行文件的符号表当中。</p>
+<p>在查阅资料的时候发现貌似还有别的方法可以将静态库中的符号变为局部可见的，使得符号表冲突的问题可以得到解决，需要在<code>gcc</code>编译静态库的时候加一些选项，这部分暂时还不太懂，仍然需要学习。</p>
+<p>下一步的计划是先将CSAPP中有关链接的部分学习完毕，之后再学习以下《程序员的自我修养:链接、装载与库》，这些知识都是内功啊，任重而道远。</p>
+<p>参考文献：</p>
+<p>[1] 《深入理解计算机系统》</p>
+<p>[2]《程序员的自我修养:链接、装载与库》</p>
+<p>[3] <a href="https://blog.csdn.net/weixin_44555968/article/details/90485329" target="_blank" rel="noopener">解决动态库的符号冲突</a></p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">算法</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">杂项</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">数据结构</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">基础</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 	<div class="article-category tagcloud">
 		<i class="icon-book icon"></i>
 		<ul class="article-tag-list">
@@ -229,17 +312,152 @@
 	</div>
 
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2020/10/21/%E5%8A%A8%E6%80%81%E7%BC%96%E8%AF%91%E7%AC%A6%E5%8F%B7%E8%A1%A8%E5%86%B2%E7%AA%81%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2020/09/27/zaver%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">zaver学习记录</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-静态编译与动态编译"><span class="toc-number">1.</span> <span class="toc-text">1.静态编译与动态编译</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-符号表"><span class="toc-number">2.</span> <span class="toc-text">2.符号表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-问题分析及解决方案"><span class="toc-number">3.</span> <span class="toc-text">3.问题分析及解决方案</span></a></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
+
+
+   
+       <section id="comments" class="comments">
+         <style>
+           .comments{margin:30px;padding:10px;background:#fff}
+           @media screen and (max-width:800px){.comments{margin:auto;padding:10px;background:#fff}}
+         </style>
+         <!--
+ * @Author: zhanghan
+ * @Date: 2020-09-03 00:37:32
+ * @Description:  
+ * @FilePath: \undefinedd:\code\zh0624.github.io\themes\hexo-theme-yilia\layout\_partial\post\valine.ejs
+-->
+<div id="vcomment" class="comment"></div>
+<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+<script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+  var notify = 'false' == true ? true : false;
+  var verify = 'false' == true ? true : false;
+  new Valine({
+    av: AV,
+    el: '#vcomment',
+    notify: notify,
+    app_id: "aIJmeck02DIo0AzpFF9lzwcY-gzGzoHsz",
+    app_key: "1rGGAGoFh7EEihUVQU6YQUVl",
+    placeholder: "Just go go",
+    avatar: "mm",
+  });
+</script>
+
+     </section>
+   
+
 
 
           </div>
@@ -262,9 +480,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,

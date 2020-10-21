@@ -173,6 +173,106 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-动态编译符号表冲突的解决方案" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/10/21/%E5%8A%A8%E6%80%81%E7%BC%96%E8%AF%91%E7%AC%A6%E5%8F%B7%E8%A1%A8%E5%86%B2%E7%AA%81%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/">动态编译符号表冲突的解决方案</a>
+    </h1>
+  
+
+        
+        <a href="/2020/10/21/%E5%8A%A8%E6%80%81%E7%BC%96%E8%AF%91%E7%AC%A6%E5%8F%B7%E8%A1%A8%E5%86%B2%E7%AA%81%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" class="archive-article-date">
+  	<time datetime="2020-10-21T14:39:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-21</time>
+</a>
+        
+        <!-- 目录内容 -->
+
+<!-- 目录内容结束 -->
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <img src="https://s1.ax1x.com/2020/10/21/BPcWQS.jpg" alt="动态编译符号表冲突的解决方案" style="zoom:40%;" />
+
+<p>近期在工作当中遇见了一个问题，记录一下分析和学习的过程。项目上近期提供了一个工具，需要我们调用这个工具的动态库中的部分函数来完成业务逻辑，其中一个函数A使用了某个系统提供的动态库，假设它调用了系统动态库中的函数B1。</p>
+<p>偏偏很不凑巧的是，我们的版本之前也曾经将这个动态库用静态编译的方式集成进来，也就是说，我们的版本里也有一个与函数B1同名的函数，这里称之为B2吧。此时就导致了一个很诡异的现象——当我们使用动态链接的方式将版本编译出来，执行可执行文件，函数A没有去调用系统动态库中的函数B1，而是调用了版本当中的函数B2，这时就会产生段错误或者其他的一些意想不到的情况。</p>
+<p>下面就来分析一下为什么会出现这样的情况。</p>
+        
+          <a class="article-more-a" href="/2020/10/21/%E5%8A%A8%E6%80%81%E7%BC%96%E8%AF%91%E7%AC%A6%E5%8F%B7%E8%A1%A8%E5%86%B2%E7%AA%81%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/#more">Read More >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">杂项</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">基础</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/program//" class="article-tag-list-link color3">编程</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/10/21/%E5%8A%A8%E6%80%81%E7%BC%96%E8%AF%91%E7%AC%A6%E5%8F%B7%E8%A1%A8%E5%86%B2%E7%AA%81%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+
+
+  
     <article id="post-zaver学习记录" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1070,6 +1170,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">同步</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">基础</a>
               </li>
             
             <div class="clearfix"></div>
