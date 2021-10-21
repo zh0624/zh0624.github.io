@@ -8,7 +8,7 @@ toc: false
 
 <img src="https://s1.ax1x.com/2020/09/09/w8lXkR.jpg" alt="epoll" style="zoom:40%;" />
 
-简要记录广度优先搜索(DFS)和深度优先搜索(BFS)两种搜索算法在遍历树型结构时的应用。附上Leetcode-559. N叉树的最大深度使用DFS和BFS的两种解法。
+简要记录广度优先搜索(DFS)和深度优先搜索(BFS)两种搜索算法在遍历树型结构时的应用。附上Leetcode-559. N叉树的最大深度使用DFS和BFS的两种解法。test
 
 <!--more-->
 
